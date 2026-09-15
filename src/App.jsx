@@ -1,9 +1,13 @@
 import Viewport from "./components/Viewport.jsx";
+import Toolbar from "./components/Toolbar.jsx";
+import InspectorPanel from "./components/InspectorPanel.jsx";
 
 export default function App() {
   return (
-    <div className="w-screen h-screen">
+    <div className="relative w-screen h-screen">
       <Viewport />
+      <Toolbar />
+      <InspectorPanel />
     </div>
   );
 }
