@@ -2,9 +2,31 @@ import { create } from "zustand";
 
 let nextId = 1;
 
-export const useSceneStore = create((set) => ({
+export const useSceneStore = create((set, get) => ({
   objects: [],
   selectedId: null,
+  lighting: { mood: "midday" },
+  fog: { enabled: false, density: 0.03 },
+
+  setLighting: (mood) => set({ lighting: { mood } }),
+  setFog: (changes) => set((state) => ({ fog: { ...state.fog, ...changes } })),
+
+  serializeScene: () => {
+    const { objects, lighting, fog } = get();
+    return JSON.stringify({ objects, lighting, fog }, null, 2);
+  },
+
+  loadScene: (json) => {
+    const data = JSON.parse(json);
+    const maxId = data.objects.reduce((max, o) => Math.max(max, o.id), 0);
+    nextId = maxId + 1; // so newly-added objects never collide with loaded ones
+    set({
+      objects: data.objects ?? [],
+      lighting: data.lighting ?? { mood: "midday" },
+      fog: data.fog ?? { enabled: false, density: 0.03 },
+      selectedId: null,
+    });
+  },
 
   addObject: (shape) =>
     set((state) => {

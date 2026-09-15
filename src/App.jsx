@@ -1,3 +1,4 @@
+import TopBar from "./components/TopBar.jsx";
 import Viewport from "./components/Viewport.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import InspectorPanel from "./components/InspectorPanel.jsx";
@@ -8,6 +9,7 @@ export default function App() {
       <Viewport />
       <Toolbar />
       <InspectorPanel />
+      <TopBar />
     </div>
   );
 }

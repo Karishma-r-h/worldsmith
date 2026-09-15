@@ -1,3 +1,4 @@
+import Environment from "./Environment.jsx";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useSceneStore } from "../store/sceneStore.js";
@@ -42,8 +43,7 @@ export default function Viewport() {
       camera={{ position: [6, 5, 8], fov: 45 }}
       onPointerMissed={() => selectObject(null)}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[6, 10, 4]} intensity={1.2} castShadow />
+      <Environment />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
