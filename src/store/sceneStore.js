@@ -44,6 +44,36 @@ export const useSceneStore = create((set, get) => ({
         selectedId: id,
       };
     }),
+      addObjectWithProps: ({ shape, color, position }) =>
+    set((state) => {
+      const id = nextId++;
+      return {
+        objects: [
+          ...state.objects,
+          {
+            id,
+            shape: shape ?? "box",
+            position: position ?? [Math.random() * 4 - 2, 0.5, Math.random() * 4 - 2],
+            color: color ?? "#8A9A80",
+          },
+        ],
+        selectedId: id,
+      };
+    }),
+
+  applyOps: (ops) =>
+    set((state) => {
+      ops.forEach((op) => {
+        if (op.op === "add") {
+          state.addObjectWithProps(op);
+        } else if (op.op === "setLighting") {
+          state.setLighting(op.mood);
+        } else if (op.op === "setFog") {
+          state.setFog({ enabled: op.enabled });
+        }
+      });
+      return {};
+    }),
 
   selectObject: (id) => set({ selectedId: id }),
 

@@ -1,3 +1,4 @@
+import PromptBar from "./components/PromptBar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import Viewport from "./components/Viewport.jsx";
 import Toolbar from "./components/Toolbar.jsx";
@@ -10,6 +11,7 @@ export default function App() {
       <Toolbar />
       <InspectorPanel />
       <TopBar />
+      <PromptBar />
     </div>
   );
 }
