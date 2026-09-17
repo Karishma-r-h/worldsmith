@@ -4,6 +4,7 @@ import { useSceneStore } from "../store/sceneStore.js";
 export default function PromptBar() {
   const [value, setValue] = useState("");
   const [status, setStatus] = useState("idle"); // idle | loading | error
+  const [history, setHistory] = useState([]);
   const applyOps = useSceneStore((s) => s.applyOps);
 
   const submit = async (e) => {
@@ -16,11 +17,15 @@ export default function PromptBar() {
       const res = await fetch("/api/plan-scene", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, history }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
       applyOps(data.ops ?? []);
+      setHistory((h) => [
+        ...h.slice(-5),
+        { prompt, responseText: JSON.stringify(data.ops ?? []) },
+      ]);
       setValue("");
       setStatus("idle");
     } catch (err) {

@@ -44,7 +44,8 @@ export const useSceneStore = create((set, get) => ({
         selectedId: id,
       };
     }),
-    addPlaceholder: ({ prompt, position }) =>
+
+  addPlaceholder: ({ prompt, position }) =>
     set((state) => {
       const id = nextId++;
       return {
@@ -53,7 +54,7 @@ export const useSceneStore = create((set, get) => ({
           {
             id,
             shape: "icosahedron",
-            status: "generating", // new field: "generating" or "ready"
+            status: "generating",
             prompt,
             assetUrl: null,
             position: position ?? [Math.random() * 4 - 2, 0.5, Math.random() * 4 - 2],
@@ -75,7 +76,19 @@ export const useSceneStore = create((set, get) => ({
     set((state) => ({
       objects: state.objects.map((o) => (o.id === id ? { ...o, status: "failed" } : o)),
     })),
-      addObjectWithProps: ({ shape, color, position }) =>
+
+  modifyLastObject: (changes) =>
+    set((state) => {
+      if (state.objects.length === 0) return {};
+      const lastId = state.objects[state.objects.length - 1].id;
+      return {
+        objects: state.objects.map((o) =>
+          o.id === lastId ? { ...o, ...changes } : o
+        ),
+      };
+    }),
+
+  addObjectWithProps: ({ shape, color, position }) =>
     set((state) => {
       const id = nextId++;
       return {
@@ -92,13 +105,18 @@ export const useSceneStore = create((set, get) => ({
       };
     }),
 
-   applyOps: (ops) =>
+  applyOps: (ops) =>
     set((state) => {
       ops.forEach((op) => {
         if (op.op === "add") {
           state.addObjectWithProps(op);
         } else if (op.op === "addGenerated") {
           state.addPlaceholder(op);
+        } else if (op.op === "modifyLast") {
+          const changes = {};
+          if (op.color) changes.color = op.color;
+          if (op.position) changes.position = op.position;
+          state.modifyLastObject(changes);
         } else if (op.op === "setLighting") {
           state.setLighting(op.mood);
         } else if (op.op === "setFog") {
@@ -107,6 +125,7 @@ export const useSceneStore = create((set, get) => ({
       });
       return {};
     }),
+
   selectObject: (id) => set({ selectedId: id }),
 
   updateObject: (id, changes) =>
