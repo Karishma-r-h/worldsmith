@@ -44,6 +44,37 @@ export const useSceneStore = create((set, get) => ({
         selectedId: id,
       };
     }),
+    addPlaceholder: ({ prompt, position }) =>
+    set((state) => {
+      const id = nextId++;
+      return {
+        objects: [
+          ...state.objects,
+          {
+            id,
+            shape: "icosahedron",
+            status: "generating", // new field: "generating" or "ready"
+            prompt,
+            assetUrl: null,
+            position: position ?? [Math.random() * 4 - 2, 0.5, Math.random() * 4 - 2],
+            color: "#D8A55C",
+          },
+        ],
+        selectedId: id,
+      };
+    }),
+
+  resolveAsset: (id, assetUrl) =>
+    set((state) => ({
+      objects: state.objects.map((o) =>
+        o.id === id ? { ...o, status: "ready", assetUrl } : o
+      ),
+    })),
+
+  failAsset: (id) =>
+    set((state) => ({
+      objects: state.objects.map((o) => (o.id === id ? { ...o, status: "failed" } : o)),
+    })),
       addObjectWithProps: ({ shape, color, position }) =>
     set((state) => {
       const id = nextId++;
@@ -61,11 +92,13 @@ export const useSceneStore = create((set, get) => ({
       };
     }),
 
-  applyOps: (ops) =>
+   applyOps: (ops) =>
     set((state) => {
       ops.forEach((op) => {
         if (op.op === "add") {
           state.addObjectWithProps(op);
+        } else if (op.op === "addGenerated") {
+          state.addPlaceholder(op);
         } else if (op.op === "setLighting") {
           state.setLighting(op.mood);
         } else if (op.op === "setFog") {
@@ -74,7 +107,6 @@ export const useSceneStore = create((set, get) => ({
       });
       return {};
     }),
-
   selectObject: (id) => set({ selectedId: id }),
 
   updateObject: (id, changes) =>

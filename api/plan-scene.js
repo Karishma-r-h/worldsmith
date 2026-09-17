@@ -6,9 +6,10 @@ const RESPONSE_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          op: { type: "string", enum: ["add", "setLighting", "setFog"] },
+          op: { type: "string", enum: ["add", "addGenerated", "setLighting", "setFog"] },
           shape: { type: "string", enum: ["box", "sphere", "cone"] },
           color: { type: "string", description: "A hex color like #FF0000" },
+          prompt: { type: "string", description: "Only for addGenerated: a text-to-3D prompt describing the real object, e.g. 'a weathered wooden log cabin, low poly'." },
           mood: { type: "string", enum: ["midday", "sunset", "night"] },
           enabled: { type: "boolean" },
         },
@@ -22,16 +23,20 @@ const RESPONSE_SCHEMA = {
 const SYSTEM_INSTRUCTION = `You control a 3D scene editor. Given a user's request,
 respond with a short list of scene operations as JSON, matching the provided schema.
 
-For every "add" operation, you MUST always include both "shape" and "color" —
-never omit "color". If the user names a color (e.g. "red", "blue"), convert it to
-the matching hex code (red -> #E53E3E, blue -> #3B82F6, green -> #22C55E,
-yellow -> #EAB308, orange -> #F97316, purple -> #A855F7, black -> #1A1A1A,
-white -> #F5F5F5). If the user doesn't mention a color at all, pick a reasonable
-hex color yourself rather than leaving it out.
+Use "add" ONLY for simple geometric requests where the user explicitly names a basic
+shape (box, sphere, cone) — e.g. "add a red sphere," "add a blue cube."
 
-For each new object the user wants, pick whichever shape (box, sphere, or cone) is
-closest to what they described. For lighting or fog changes, emit "setLighting" or
-"setFog" instead. Only emit operations for what the user actually asked for.`;
+Use "addGenerated" for anything real-world or specific — trees, buildings, vehicles,
+animals, furniture, anything that isn't just a plain geometric primitive. For these,
+write a concise, descriptive "prompt" field suitable for a text-to-3D generator, e.g.
+"a weathered wooden log cabin, low poly" or "a tall pine tree, stylized."
+
+Every "add" op MUST always include both "shape" and "color" (convert named colors
+to hex, e.g. red -> #E53E3E, blue -> #3B82F6, green -> #22C55E). Every "addGenerated"
+op MUST include a "prompt" field instead.
+
+For lighting or fog changes, emit "setLighting" or "setFog". Only emit operations
+for what the user actually asked for.`;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
