@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { useSceneStore } from "../store/sceneStore.js";
 
+const MOODS = ["midday", "sunset", "night"];
+
 export default function TopBar() {
   const fileInputRef = useRef();
   const lighting = useSceneStore((s) => s.lighting);
@@ -24,24 +26,24 @@ export default function TopBar() {
     const file = e.target.files?.[0];
     if (!file) return;
     file.text().then(loadScene);
-    e.target.value = ""; // lets you load the same filename again later if needed
+    e.target.value = "";
   };
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-neutral-900/90 border border-neutral-700 rounded-lg px-3 py-2 text-white text-xs">
+    <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 flex flex-wrap justify-center items-center gap-1.5 sm:gap-3 bg-neutral-900/90 border border-neutral-700 rounded-lg px-2 sm:px-3 py-2 text-white text-[10px] sm:text-xs max-w-[92vw]">
       <select
         value={lighting.mood}
         onChange={(e) => setLighting(e.target.value)}
         className="bg-transparent outline-none capitalize"
       >
-        {["midday", "sunset", "night"].map((m) => (
+        {MOODS.map((m) => (
           <option key={m} value={m} className="bg-neutral-900">
             {m}
           </option>
         ))}
       </select>
 
-      <label className="flex items-center gap-1 cursor-pointer">
+      <label className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
         <input
           type="checkbox"
           checked={fog.enabled}
@@ -50,7 +52,7 @@ export default function TopBar() {
         Fog
       </label>
 
-      <div className="w-px h-4 bg-neutral-700" />
+      <div className="hidden sm:block w-px h-4 bg-neutral-700" />
 
       <button onClick={handleSave} className="hover:text-green-400">
         Save

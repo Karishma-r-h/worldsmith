@@ -4,7 +4,6 @@ import { OrbitControls } from "@react-three/drei";
 import { useSceneStore } from "../store/sceneStore.js";
 import { useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { resolveAssetForPrompt } from "../lib/assetQueue.js";
 import GeneratedAsset from "./GeneratedAsset.jsx";
 
 const GEOMETRY = {
@@ -17,31 +16,12 @@ const GEOMETRY = {
 function SceneObject({ object }) {
   const selectedId = useSceneStore((s) => s.selectedId);
   const selectObject = useSceneStore((s) => s.selectObject);
-  const resolveAsset = useSceneStore((s) => s.resolveAsset);
-  const failAsset = useSceneStore((s) => s.failAsset);
   const isSelected = selectedId === object.id;
-  const isGenerating = object.status === "generating";
   const isReady = object.status === "ready" && object.assetUrl;
 
   const [scaleIn, setScaleIn] = useState(isReady ? 1 : 0.001);
 
-  useEffect(() => {
-    if (object.status !== "generating" || !object.prompt) return;
-    let cancelled = false;
-    resolveAssetForPrompt(object.prompt)
-      .then((url) => {
-        if (!cancelled) resolveAsset(object.id, url);
-      })
-      .catch((err) => {
-        console.error("Generation failed:", err);
-        if (!cancelled) failAsset(object.id);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [object.id, object.status]);
-
+  // Pop the real model in with a quick scale animation once it's ready.
   useEffect(() => {
     if (object.status === "ready") setScaleIn(0.001);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +43,7 @@ function SceneObject({ object }) {
       {isReady ? (
         <GeneratedAsset url={object.assetUrl} />
       ) : (
-          <mesh castShadow>
+        <mesh castShadow>
           {GEOMETRY[object.shape] ?? GEOMETRY.box}
           <meshStandardMaterial
             color={object.color}
